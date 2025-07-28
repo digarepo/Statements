@@ -106,18 +106,31 @@ export default function Index() {
   const actionData = useActionData<typeof action>();
   // Initialize fetcher for form submissions
   const fetcher = useFetcher();
+  // Initialize revalidator to refresh data
+  const revalidator = useRevalidator();
+  // Create ref for the form to reset it
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Reset form after successful submission
+  useEffect(() => {
+    if (fetcher.state === "idle" && fetcher.data && typeof fetcher.data === 'object' && !('error' in fetcher.data)) {
+      // Reset the form if submission was successful
+      formRef.current?.reset();
+    }
+  }, [fetcher.state, fetcher.data]);
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
       {/* Create User Form */}
       <fetcher.Form
+        ref={formRef}
         method="post"
         className="mb-8 p-6 bg-gray-400 rounded-xl border border-gray-200"
         onSubmit={() => {
-          // Revalidate data after form submission
+          // Trigger revalidation after form submission
           setTimeout(() => {
             revalidator.revalidate();
-          }, 100);
+          }, 500);
         }}
       >
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
@@ -164,10 +177,7 @@ export default function Index() {
       <div className="space-y-4">
         {/* Map through each user and render their details */}
         {users.map((user: User) => (
-          <div
-            key={user.dp_id}
-            className="p-4 bg-gray-400 rounded-lg shadow-sm hover:shadow-md transition-shadow"
-          >
+          <div key={user.dp_id} className="p-4 bg-gray-400 rounded-lg shadow-sm hover:shadow-md transition-shadow">
             <fetcher.Form method="post" className="flex gap-2">
               {/* Editable DP ID field */}
               <input
@@ -182,7 +192,7 @@ export default function Index() {
                 name="amount"
                 type="number"
                 defaultValue={user.amount}
-                className="w-24 p-2 border border-gray-300 rounded-md mb-2"
+              className="w-24 p-2 border border-gray-300 rounded-md mb-2"
                 placeholder="Amount"
                 required
               />
@@ -204,7 +214,7 @@ export default function Index() {
                   type="submit"
                   name="intent"
                   value="update"
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex-1 transition-colors"
+                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex-1 transition-colors"
                 >
                   Update
                 </button>
@@ -213,7 +223,7 @@ export default function Index() {
                   type="submit"
                   name="intent"
                   value="delete"
-                  className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md flex-1 transition-colors"
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md flex-1 transition-colors"
                 >
                   Delete
                 </button>
