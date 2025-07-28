@@ -106,21 +106,23 @@ export default function Index() {
   const actionData = useActionData<typeof action>();
   // Initialize fetcher for form submissions
   const fetcher = useFetcher();
-  
+
   return (
-    <div className="max-w-md mx-auto p-4">
+    <div className="max-w-2xl mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
       {/* Create User Form */}
-      <Form 
-        method="post" 
-        className="mb-8 p-4 border rounded"
+      <Form
+        method="post"
+        className="mb-8 p-6 bg-gray-400 rounded-xl border border-gray-200"
       >
-        <h2 className="text-lg font-bold mb-2">Create User</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Create New Account
+        </h2>
         {/* DP ID input */}
         <input
           name="dp_id"
           placeholder="DP ID (6 chars)"
           maxLength={6}
-          className="w-full p-2 border mb-2"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
           required
         />
         {/* Amount input */}
@@ -146,7 +148,7 @@ export default function Index() {
           type="submit"
           name="intent"
           value="create"
-          className="bg-blue-500 text-white p-2 rounded"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
         >
           Create
         </button>
@@ -156,7 +158,10 @@ export default function Index() {
       <div className="space-y-4">
         {/* Map through each user and render their details */}
         {users.map((user: User) => (
-          <div key={user.dp_id} className="p-4 border rounded ">
+          <div
+            key={user.dp_id}
+            className="p-4 bg-gray-400 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          >
             <fetcher.Form method="post" className="flex gap-2">
               {/* Editable DP ID field */}
               <input
@@ -171,12 +176,12 @@ export default function Index() {
                 name="amount"
                 type="number"
                 defaultValue={user.amount}
-                className="w-24 p-2 border mb-2"
+                className="w-24 p-2 border border-gray-300 rounded-md mb-2"
                 placeholder="Amount"
                 required
               />
               {/* Display deposit date (read-only) */}
-              <div className="w-32 p-2 border mb-2 bg-gray-100">
+              <div className="w-32 p-2 border border-gray-300 bg-gray-600 rounded-md mb-2">
                 {user.deposit_date
                   ? new Date(user.deposit_date).toLocaleDateString()
                   : "Not set"}
@@ -193,7 +198,7 @@ export default function Index() {
                   type="submit"
                   name="intent"
                   value="update"
-                  className="bg-green-500 text-white p-2 rounded flex-1"
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex-1 transition-colors"
                 >
                   Update
                 </button>
@@ -202,7 +207,7 @@ export default function Index() {
                   type="submit"
                   name="intent"
                   value="delete"
-                  className="bg-red-500 text-white p-2 rounded flex-1"
+                  className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md flex-1 transition-colors"
                 >
                   Delete
                 </button>
