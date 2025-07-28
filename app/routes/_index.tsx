@@ -110,9 +110,15 @@ export default function Index() {
   return (
     <div className="max-w-2xl mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
       {/* Create User Form */}
-      <Form
+      <fetcher.Form
         method="post"
         className="mb-8 p-6 bg-gray-400 rounded-xl border border-gray-200"
+        onSubmit={() => {
+          // Revalidate data after form submission
+          setTimeout(() => {
+            revalidator.revalidate();
+          }, 100);
+        }}
       >
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Create New Account
@@ -130,13 +136,13 @@ export default function Index() {
           name="amount"
           type="number"
           placeholder="Amount"
-          className="w-full p-2 border mb-2"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
           required
         />
         <input
           name="deposit_date"
           type="datetime-local"
-          className="w-full p-2 border mb-2"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
           required
         />
         {/* Show error message if any */}
@@ -152,7 +158,7 @@ export default function Index() {
         >
           Create
         </button>
-      </Form>
+      </fetcher.Form>
 
       {/* Users List */}
       <div className="space-y-4">
