@@ -6,7 +6,14 @@ import {
   type LoaderFunction,
   type MetaFunction,
 } from "@remix-run/node";
-import { Form, useFetcher, useLoaderData, useActionData } from "@remix-run/react";
+import {
+  Form,
+  useFetcher,
+  useLoaderData,
+  useActionData,
+  useRevalidator,
+} from "@remix-run/react";
+import { useEffect, useRef } from "react";
 import { query } from "services/db.server";
 
 // Meta function to define page metadata (title, description, etc.)
@@ -40,7 +47,11 @@ export const loader: LoaderFunction = async () => {
 };
 
 // Action function to handle form submissions (create, update, delete)
-export const action: ActionFunction = async ({ request }: { request: Request }) => {
+export const action: ActionFunction = async ({
+  request,
+}: {
+  request: Request;
+}) => {
   // Parse the form data from the request
   const formData = await request.formData();
   // Get the intent (action type), dp_id, amount, and old_dp_id from the form
@@ -69,22 +80,22 @@ export const action: ActionFunction = async ({ request }: { request: Request }) 
     if (isNaN(depositDate.getTime())) {
       return json({ error: "Invalid date format" }, { status: 400 });
     }
-    const formattedDate = depositDate.toISOString().slice(0, 19).replace('T', ' ');
-    
+    const formattedDate = depositDate
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " ");
+
     await query(
       "INSERT INTO users (dp_id, amount, deposit_date) VALUES (?, ?, ?)",
-      [
-        dp_id?.toString().trim(), 
-        Number(amount), 
-        formattedDate
-      ]
+      [dp_id?.toString().trim(), Number(amount), formattedDate]
     );
   } else if (intent === "update") {
     // Update an existing user
-    await query(
-      "UPDATE users SET dp_id = ?, amount = ? WHERE dp_id = ?",
-      [dp_id as string, Number(amount), old_dp_id as string]
-    );
+    await query("UPDATE users SET dp_id = ?, amount = ? WHERE dp_id = ?", [
+      dp_id as string,
+      Number(amount),
+      old_dp_id as string,
+    ]);
   } else if (intent === "delete") {
     // Delete a user
     // Use original DP ID for deletion
@@ -113,7 +124,12 @@ export default function Index() {
 
   // Reset form after successful submission
   useEffect(() => {
-    if (fetcher.state === "idle" && fetcher.data && typeof fetcher.data === 'object' && !('error' in fetcher.data)) {
+    if (
+      fetcher.state === "idle" &&
+      fetcher.data &&
+      typeof fetcher.data === "object" &&
+      !("error" in fetcher.data)
+    ) {
       // Reset the form if submission was successful
       formRef.current?.reset();
     }
@@ -177,7 +193,10 @@ export default function Index() {
       <div className="space-y-4">
         {/* Map through each user and render their details */}
         {users.map((user: User) => (
-          <div key={user.dp_id} className="p-4 bg-gray-400 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+          <div
+            key={user.dp_id}
+            className="p-4 bg-gray-400 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          >
             <fetcher.Form method="post" className="flex gap-2">
               {/* Editable DP ID field */}
               <input
@@ -192,7 +211,7 @@ export default function Index() {
                 name="amount"
                 type="number"
                 defaultValue={user.amount}
-              className="w-24 p-2 border border-gray-300 rounded-md mb-2"
+                className="w-24 p-2 border border-gray-300 rounded-md mb-2"
                 placeholder="Amount"
                 required
               />
@@ -214,7 +233,7 @@ export default function Index() {
                   type="submit"
                   name="intent"
                   value="update"
-                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex-1 transition-colors"
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex-1 transition-colors"
                 >
                   Update
                 </button>
@@ -223,7 +242,7 @@ export default function Index() {
                   type="submit"
                   name="intent"
                   value="delete"
-                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md flex-1 transition-colors"
+                  className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md flex-1 transition-colors"
                 >
                   Delete
                 </button>
