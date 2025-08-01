@@ -45,6 +45,14 @@ export interface Statement {
   dp_id: string;
   amount: number;
   deposit_date: string | null;
+  owner_name: string;
+  depositor_name: string;
+  bank_name: string;
+  reconciliation: string;
+  ref_number: string;
+  deposit_number: string;
+  account_type: string;
+  comment: string;
 }
 
 // Example usage with proper typing:

@@ -54,6 +54,14 @@ export const action: ActionFunction = async ({
   const dp_id = formData.get("dp_id");
   const amount = formData.get("amount");
   const old_dp_id = formData.get("old_dp_id");
+  const owner_name = formData.get("owner_name");
+  const depositor_name = formData.get("depositor_name");
+  const bank_name = formData.get("bank_name");
+  const reconciliation = formData.get("reconciliation");
+  const ref_number = formData.get("ref_number");
+  const deposit_number = formData.get("deposit_number");
+  const account_type = formData.get("account_type");
+  const comment = formData.get("comment");
 
   // Handle different actions based on the intent
   if (intent === "create") {
@@ -68,6 +76,9 @@ export const action: ActionFunction = async ({
     }
     if (!deposit_date) {
       return json({ error: "Deposit date is required" }, { status: 400 });
+    }
+    if (!owner_name || !depositor_name || !bank_name || !reconciliation || !ref_number || !deposit_number || !account_type || !comment) {
+      return json({ error: "All fields are required" }, { status: 400 });
     }
 
     // Convert and validate datetime
@@ -90,6 +101,15 @@ export const action: ActionFunction = async ({
       dp_id as string,
       Number(amount),
       old_dp_id as string,
+      // Include other fields in the update query
+      owner_name as string,
+      depositor_name as string,
+      bank_name as string,
+      reconciliation as string,
+      ref_number as string,
+      deposit_number as string,
+      account_type as string,
+      comment as string,
     ]);
   } else if (intent === "delete") {
     // Delete a statement
@@ -173,6 +193,61 @@ export default function Index() {
           className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
           required
         />
+        {/* Additional fields for owner, depositor, bank, etc. */}
+        <input
+          name="owner_name"
+          placeholder="Owner Name"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
+          required
+        />
+        <input
+          name="depositor_name"
+          placeholder="Depositor Name"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
+          required
+        />
+        <input
+          name="bank_name"
+          placeholder="Bank Name"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
+          required
+        />
+        <input
+          name="reconciliation"
+          placeholder="Reconciliation"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
+          required
+        />
+        <input
+          name="ref_number"
+          placeholder="Reference Number"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
+          required
+        />
+        <input
+          name="deposit_number"
+          placeholder="Deposit Number"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
+          required
+        />
+        <input
+          name="deposit_number"
+          placeholder="Deposit Number"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
+          required
+        />
+        <input
+          name="account_type"
+          placeholder="Account Type"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
+          required
+        />
+        <input
+          name="comment"
+          placeholder="Comment"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
+          required
+        />
         {/* Show error message if any */}
         {actionData?.error && (
           <div className="text-red-500 text-sm mb-2">{actionData.error}</div>
@@ -222,6 +297,15 @@ export default function Index() {
                   ? new Date(statement.deposit_date).toLocaleDateString()
                   : "Not set"}
               </div>
+              {/* Editable Owner Name field */}
+              <input
+                name="owner_name"
+                defaultValue={statement.owner_name}
+                className="w-full p-2 border border-gray-300 rounded-md mb-2"
+                placeholder="Owner Name"
+                required
+              />
+              {/* Editable Depositor Name
 
               {/* Hidden field to store the original DP ID for updates */}
               <input type="hidden" name="old_dp_id" value={statement.dp_id} />
