@@ -14,7 +14,7 @@ import {
   useRevalidator,
 } from "@remix-run/react";
 import { useEffect, useRef } from "react";
-import { query } from "services/db.server";
+import { query, type Statement } from "services/db.server";
 
 // Meta function to define page metadata (title, description, etc.)
 export const meta: MetaFunction = () => {
@@ -24,22 +24,17 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-// Type definition for the User object
-type User = {
-  dp_id: string;
-  amount: number;
-  deposit_date: string | null;
-};
+// Using the Statement type from db.server for consistency
 
 // Loader function that runs on the server to fetch data
 export const loader: LoaderFunction = async () => {
   try {
     // Migration will be handled separately if needed
 
-    // Query all users from the database
-    const users = await query("SELECT * FROM users");
-    // Return the users as JSON
-    return json(users);
+    // Query all statements from the database
+    const statements = await query<Statement>("SELECT * FROM statements");
+    // Return the statements as JSON
+    return json(statements);
   } catch (error) {
     console.error("Loader error:", error);
     return json([]);
@@ -62,7 +57,7 @@ export const action: ActionFunction = async ({
 
   // Handle different actions based on the intent
   if (intent === "create") {
-    // Create a new user
+    // Create a new statement
     const deposit_date = formData.get("deposit_date");
     // Validate required fields
     if (!dp_id || dp_id.toString().length !== 6) {
@@ -86,23 +81,25 @@ export const action: ActionFunction = async ({
       .replace("T", " ");
 
     await query(
-      "INSERT INTO users (dp_id, amount, deposit_date) VALUES (?, ?, ?)",
+      "INSERT INTO statements (dp_id, amount, deposit_date) VALUES (?, ?, ?)",
       [dp_id?.toString().trim(), Number(amount), formattedDate]
     );
   } else if (intent === "update") {
-    // Update an existing user
-    await query("UPDATE users SET dp_id = ?, amount = ? WHERE dp_id = ?", [
+    // Update an existing statement
+    await query("UPDATE statements SET dp_id = ?, amount = ? WHERE dp_id = ?", [
       dp_id as string,
       Number(amount),
       old_dp_id as string,
     ]);
   } else if (intent === "delete") {
-    // Delete a user
+    // Delete a statement
     // Use original DP ID for deletion
     if (!old_dp_id) {
       return json({ error: "Missing original DP ID" }, { status: 400 });
     }
-    await query("DELETE FROM users WHERE dp_id = ?", [old_dp_id as string]);
+    await query("DELETE FROM statements WHERE dp_id = ?", [
+      old_dp_id as string,
+    ]);
   }
 
   // Return a success response
@@ -111,8 +108,8 @@ export const action: ActionFunction = async ({
 
 // Main component that renders the page
 export default function Index() {
-  // Load the users data using the loader
-  const users = useLoaderData<typeof loader>();
+  // Load the statements data using the loader
+  const statements = useLoaderData<typeof loader>();
   // Get action data for error handling
   const actionData = useActionData<typeof action>();
   // Initialize fetcher for form submissions
@@ -137,7 +134,7 @@ export default function Index() {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
-      {/* Create User Form */}
+      {/* Create Statement Form */}
       <fetcher.Form
         ref={formRef}
         method="post"
@@ -150,7 +147,7 @@ export default function Index() {
         }}
       >
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          Create New Account
+          Create New Statement
         </h2>
         {/* DP ID input */}
         <input
@@ -164,7 +161,9 @@ export default function Index() {
         <input
           name="amount"
           type="number"
-          placeholder="Amount"
+          step="0.01"
+          min="0"
+          placeholder="Amount (e.g., 123.45)"
           className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
           required
         />
@@ -189,19 +188,19 @@ export default function Index() {
         </button>
       </fetcher.Form>
 
-      {/* Users List */}
+      {/* Statements List */}
       <div className="space-y-4">
-        {/* Map through each user and render their details */}
-        {users.map((user: User) => (
+        {/* Map through each statement and render their details */}
+        {statements.map((statement: Statement) => (
           <div
-            key={user.dp_id}
+            key={statement.dp_id}
             className="p-4 bg-gray-400 rounded-lg shadow-sm hover:shadow-md transition-shadow"
           >
             <fetcher.Form method="post" className="flex gap-2">
               {/* Editable DP ID field */}
               <input
                 name="dp_id"
-                defaultValue={user.dp_id}
+                defaultValue={statement.dp_id}
                 className="w-20 p-2 border mb-2"
                 placeholder="DP ID"
                 required
@@ -210,20 +209,22 @@ export default function Index() {
               <input
                 name="amount"
                 type="number"
-                defaultValue={user.amount}
+                step="0.01"
+                min="0"
+                defaultValue={statement.amount}
                 className="w-24 p-2 border border-gray-300 rounded-md mb-2"
                 placeholder="Amount"
                 required
               />
               {/* Display deposit date (read-only) */}
               <div className="w-32 p-2 border border-gray-300 bg-gray-600 rounded-md mb-2">
-                {user.deposit_date
-                  ? new Date(user.deposit_date).toLocaleDateString()
+                {statement.deposit_date
+                  ? new Date(statement.deposit_date).toLocaleDateString()
                   : "Not set"}
               </div>
 
               {/* Hidden field to store the original DP ID for updates */}
-              <input type="hidden" name="old_dp_id" value={user.dp_id} />
+              <input type="hidden" name="old_dp_id" value={statement.dp_id} />
               <div className="flex gap-2 items-center">
                 {fetcher.state === "submitting" && (
                   <span className="text-sm text-gray-500">Processing...</span>

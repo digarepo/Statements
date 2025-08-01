@@ -1,11 +1,16 @@
 // app/db.server.ts
+import dotenv from "dotenv";
 import mariadb from "mariadb";
+
+
+// Load environment variables
+dotenv.config();
 
 const pool = mariadb.createPool({
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "Abcd1234@&",
-  database: process.env.DB_NAME || "users",
+  database: process.env.DB_NAME || "statements_db",
   port: Number(process.env.DB_PORT) || 3306,
   connectionLimit: 5,
 });
@@ -27,7 +32,7 @@ export async function query<T = unknown>(
   } finally {
     if (conn) {
       try {
-        await conn.end(); // Properly close the connection
+        conn.release(); // Release connection back to pool
       } catch (e) {
         console.error("Error closing connection:", e);
       }
@@ -35,33 +40,12 @@ export async function query<T = unknown>(
   }
 }
 
-// Migration function to update table schema
-export async function migrateUsersTable(): Promise<void> {
-  try {
-    // Drop existing table
-    await query("DROP TABLE IF EXISTS users");
-
-    // Create new table with updated schema
-    await query(`
-      CREATE TABLE users (
-        dp_id VARCHAR(6) not null PRIMARY KEY,
-        amount INT NOT NULL,
-        deposit_date datetime DEFAULT NULL
-      )
-    `);
-
-    console.log("Users table migrated successfully!");
-  } catch (error) {
-    console.error("Migration failed:", error);
-    throw error;
-  }
+// Type definitions for better maintainability
+export interface Statement {
+  dp_id: string;
+  amount: number;
+  deposit_date: string | null;
 }
 
 // Example usage with proper typing:
-// interface User {
-//   dp_id: string;
-//   amount: number;
-//   deposit_date: string | null;
-// }
-// const users = await query<User>("SELECT * FROM users");
-// const users = await query<User>("SELECT * FROM users");
+// const statements = await query<Statement>("SELECT * FROM statements");
