@@ -91,24 +91,40 @@ export const action: ActionFunction = async ({
       .slice(0, 19)
       .replace("T", " ");
 
-    await query();
-
+    await query(
+      "INSERT INTO statements (dp_id, amount, deposit_date, owner_name, depositor_name, bank_name, reconciliation, ref_number, deposit_number, account_type, comment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        dp_id?.toString().trim(),
+        Number(amount),
+        formattedDate,
+        owner_name as string,
+        depositor_name as string,
+        bank_name as string,
+        reconciliation as string,
+        ref_number as string,
+        deposit_number as string,
+        account_type as string,
+        comment as string
+      ]
+    );
   } else if (intent === "update") {
     // Update an existing statement
-    await query("UPDATE statements SET dp_id = ?, amount = ? WHERE dp_id = ?", [
-      dp_id as string,
-      Number(amount),
-      old_dp_id as string,
-      // Include other fields in the update query
-      owner_name as string,
-      depositor_name as string,
-      bank_name as string,
-      reconciliation as string,
-      ref_number as string,
-      deposit_number as string,
-      account_type as string,
-      comment as string,
-    ]);
+    await query(
+      "UPDATE statements SET dp_id = ?, amount = ?, owner_name = ?, depositor_name = ?, bank_name = ?, reconciliation = ?, ref_number = ?, deposit_number = ?, account_type = ?, comment = ? WHERE dp_id = ?",
+      [
+        dp_id as string,
+        Number(amount),
+        owner_name as string,
+        depositor_name as string,
+        bank_name as string,
+        reconciliation as string,
+        ref_number as string,
+        deposit_number as string,
+        account_type as string,
+        comment as string,
+        old_dp_id as string
+      ]
+    );
   } else if (intent === "delete") {
     // Delete a statement
     // Use original DP ID for deletion
@@ -151,244 +167,187 @@ export default function Index() {
   }, [fetcher.state, fetcher.data]);
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
-      {/* Create Statement Form */}
-      <fetcher.Form
-        ref={formRef}
-        method="post"
-        className="mb-8 p-6 bg-gray-400 rounded-xl border border-gray-200"
-        onSubmit={() => {
-          // Trigger revalidation after form submission
-          setTimeout(() => {
-            revalidator.revalidate();
-          }, 500);
-        }}
-      >
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          Create New Statement
-        </h2>
-        {/* DP ID input */}
-        <input
-          name="dp_id"
-          placeholder="DP ID (6 chars)"
-          maxLength={6}
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-          required
-        />
-        {/* Amount input */}
-        <input
-          name="amount"
-          type="number"
-          step="0.01"
-          min="0"
-          placeholder="Amount (e.g., 123.45)"
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-          required
-        />
-        <input
-          name="deposit_date"
-          type="datetime-local"
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-          required
-        />
-        {/* Additional fields for owner, depositor, bank, etc. */}
-        <input
-          name="owner_name"
-          placeholder="Owner Name"
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-          required
-        />
-        <input
-          name="depositor_name"
-          placeholder="Depositor Name"
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-          required
-        />
-        <input
-          name="bank_name"
-          placeholder="Bank Name"
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-          required
-        />
-        <input
-          name="reconciliation"
-          placeholder="Reconciliation"
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-          required
-        />
-        <input
-          name="ref_number"
-          placeholder="Reference Number"
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-          required
-        />
-        <input
-          name="deposit_number"
-          placeholder="Deposit Number"
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-          required
-        />
-        <input
-          name="deposit_number"
-          placeholder="Deposit Number"
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-          required
-        />
-        <input
-          name="account_type"
-          placeholder="Account Type"
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-          required
-        />
-        <input
-          name="comment"
-          placeholder="Comment"
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-          required
-        />
-        {/* Show error message if any */}
-        {actionData?.error && (
-          <div className="text-red-500 text-sm mb-2">{actionData.error}</div>
-        )}
-        {/* Create button */}
-        <button
-          type="submit"
-          name="intent"
-          value="create"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
-        >
-          Create
-        </button>
-      </fetcher.Form>
+    <div className="min-h-screen bg-gray-900 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Statements Manager</h1>
+          <p className="text-gray-400">Create and manage your financial statements</p>
+        </div>
 
-      {/* Statements List */}
-      <div className="space-y-4">
-        {/* Map through each statement and render their details */}
-        {statements.map((statement: Statement) => (
-          <div
-            key={statement.dp_id}
-            className="p-4 bg-gray-400 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+        {/* Create Statement Form */}
+        <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 mb-8">
+          <fetcher.Form
+            ref={formRef}
+            method="post"
+            onSubmit={() => {
+              setTimeout(() => {
+                revalidator.revalidate();
+              }, 500);
+            }}
           >
-            <fetcher.Form method="post" className="flex gap-2">
-              {/* Editable DP ID field */}
-              <input
-                name="dp_id"
-                defaultValue={statement.dp_id}
-                className="w-20 p-2 border mb-2"
-                placeholder="DP ID"
-                required
-              />
-              {/* Editable Amount field */}
-              <input
-                name="amount"
-                type="number"
-                step="0.01"
-                min="0"
-                defaultValue={statement.amount}
-                className="w-24 p-2 border border-gray-300 rounded-md mb-2"
-                placeholder="Amount"
-                required
-              />
-              {/* Display deposit date (read-only) */}
-              <div className="w-32 p-2 border border-gray-300 bg-gray-600 rounded-md mb-2">
-                {statement.deposit_date
-                  ? new Date(statement.deposit_date).toLocaleDateString()
-                  : "Not set"}
-              </div>
-              {/* Editable Owner Name field */}
-              <input
-                name="owner_name"
-                defaultValue={statement.owner_name}
-                className="w-full p-2 border border-gray-300 rounded-md mb-2"
-                placeholder="Owner Name"
-                required
-              />
-              {/* Editable Depositor Name field */}
-              <input
-                name="depositor_name"
-                defaultValue={statement.depositor_name}
-                className="w-full p-2 border border-gray-300 rounded-md mb-2"
-                placeholder="Depositor Name"
-                required
-              />
-              {/* Editable Bank Name field */}
-              <input
-                name="bank_name"
-                defaultValue={statement.bank_name}
-                className="w-full p-2 border border-gray-300 rounded-md mb-2"
-                placeholder="Bank Name"
-                required
-              />
-              {/* Editable Reconciliation field */}
-              <input
-                name="reconciliation"
-                defaultValue={statement.reconciliation}
-                className="w-full p-2 border border-gray-300 rounded-md mb-2"
-                placeholder="Reconciliation"
-                required
-              />
-              {/* Editable Reference Number field */}
-              <input
-                name="ref_number"
-                defaultValue={statement.ref_number}
-                className="w-full p-2 border border-gray-300 rounded-md mb-2"
-                placeholder="Reference Number"
-                required
-              />
-              {/* Editable Deposit Number field */}
-              <input
-                name="deposit_number"
-                defaultValue={statement.deposit_number}
-                className="w-full p-2 border border-gray-300 rounded-md mb-2"
-                placeholder="Deposit Number"
-                required
-              />
-              {/* Editable Account Type field */}
-              <input
-                name="account_type"
-                defaultValue={statement.account_type}
-                className="w-full p-2 border border-gray-300 rounded-md mb-2"
-                placeholder="Account Type"
-                required
-              />
-              {/* Editable Comment field */}
-              <input
-                name="comment"
-                defaultValue={statement.comment}
-                className="w-full p-2 border border-gray-300 rounded-md mb-2"
-                placeholder="Comment"
-                required
-              />
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-white">Create New Statement</h2>
+            </div>
 
-              {/* Hidden field to store the original DP ID for updates */}
-              <input type="hidden" name="old_dp_id" value={statement.dp_id} />
-              <div className="flex gap-2 items-center">
-                {fetcher.state === "submitting" && (
-                  <span className="text-sm text-gray-500">Processing...</span>
-                )}
-                {/* Update button */}
-                <button
-                  type="submit"
-                  name="intent"
-                  value="update"
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md flex-1 transition-colors"
-                >
-                  Update
-                </button>
-                {/* Delete button */}
-                <button
-                  type="submit"
-                  name="intent"
-                  value="delete"
-                  className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md flex-1 transition-colors"
-                >
-                  Delete
-                </button>
+            {/* Basic Information Section */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-200 mb-4 border-b border-gray-600 pb-2">
+                Basic Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">DP ID</label>
+                  <input
+                    name="dp_id"
+                    placeholder="6 characters"
+                    maxLength={6}
+                    className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Amount</label>
+                  <input
+                    name="amount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Deposit Date</label>
+                  <input
+                    name="deposit_date"
+                    type="datetime-local"
+                    className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                    required
+                  />
+                </div>
               </div>
-            </fetcher.Form>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+            </div>
+
+            {/* Personal Information Section */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-200 mb-4 border-b border-gray-600 pb-2">
+                Personal Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Owner Name</label>
+                  <input
+                    name="owner_name"
+                    placeholder="Account owner name"
+                    className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Depositor Name</label>
+                  <input
+                    name="depositor_name"
+                    placeholder="Person making deposit"
+                    className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Banking Information Section */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-200 mb-4 border-b border-gray-600 pb-2">
+                Banking Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Bank Name</label>
+                  <input
+                    name="bank_name"
+                    placeholder="Financial institution"
+                    className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Account Type</label>
+                  <select
+                    name="account_type"
+                    className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                    required
+                  >
+                    <option value="">Select account type</option>
+                    <option value="checking">Checking</option>
+                    <option value="savings">Savings</option>
+                    <option value="business">Business</option>
+                    <option value="joint">Joint</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Transaction Details Section */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-200 mb-4 border-b border-gray-600 pb-2">
+                Transaction Details
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Reference Number</label>
+                  <input
+                    name="ref_number"
+                    placeholder="Transaction reference"
+                    className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Deposit Number</label>
+                  <input
+                    name="deposit_number"
+                    placeholder="Deposit slip number"
+                    className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Reconciliation</label>
+                  <select
+                    name="reconciliation"
+                    className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                    required
+                  >
+                    <option value="">Select status</option>
+                    <option value="pending">Pending</option>
+                    <option value="reconciled">Reconciled</option>
+                    <option value="disputed">Disputed</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Comment Section */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-300 mb-2">Comment</label>
+              <textarea
+                name="comment"
+                placeholder="Additional notes or comments..."
+                rows={3}
+                className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 resize-none"
+                required
+              />
+            </div>
+
+            {/* Error Message */}
+            {actionData?.error && (
+              <div className="mb-4 p-4 bg-red-900 border border-red-700 rounded-lg">
+                <div className="flex items-center">
+                  <span className="text-red-300 font-medium">{actionData.error}</span>
+                </div>
+              </div>
+            )}
+
+           

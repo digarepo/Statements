@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS statements (
       dp_id VARCHAR(6) not null PRIMARY KEY,
       amount DECIMAL(10,2) NOT NULL,
-      deposit_date datetime DEFAULT NULL
+      deposit_date DATETIME DEFAULT NULL
       owner_name VARCHAR(100) NOT NULL,
       depositor_name VARCHAR(100) NOT NULL,
       bank_name VARCHAR(100) NOT NULL,
