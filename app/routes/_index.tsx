@@ -91,10 +91,8 @@ export const action: ActionFunction = async ({
       .slice(0, 19)
       .replace("T", " ");
 
-    await query(
-      "INSERT INTO statements (dp_id, amount, deposit_date) VALUES (?, ?, ?)",
-      [dp_id?.toString().trim(), Number(amount), formattedDate]
-    );
+    await query();
+
   } else if (intent === "update") {
     // Update an existing statement
     await query("UPDATE statements SET dp_id = ?, amount = ? WHERE dp_id = ?", [
@@ -305,7 +303,62 @@ export default function Index() {
                 placeholder="Owner Name"
                 required
               />
-              {/* Editable Depositor Name
+              {/* Editable Depositor Name field */}
+              <input
+                name="depositor_name"
+                defaultValue={statement.depositor_name}
+                className="w-full p-2 border border-gray-300 rounded-md mb-2"
+                placeholder="Depositor Name"
+                required
+              />
+              {/* Editable Bank Name field */}
+              <input
+                name="bank_name"
+                defaultValue={statement.bank_name}
+                className="w-full p-2 border border-gray-300 rounded-md mb-2"
+                placeholder="Bank Name"
+                required
+              />
+              {/* Editable Reconciliation field */}
+              <input
+                name="reconciliation"
+                defaultValue={statement.reconciliation}
+                className="w-full p-2 border border-gray-300 rounded-md mb-2"
+                placeholder="Reconciliation"
+                required
+              />
+              {/* Editable Reference Number field */}
+              <input
+                name="ref_number"
+                defaultValue={statement.ref_number}
+                className="w-full p-2 border border-gray-300 rounded-md mb-2"
+                placeholder="Reference Number"
+                required
+              />
+              {/* Editable Deposit Number field */}
+              <input
+                name="deposit_number"
+                defaultValue={statement.deposit_number}
+                className="w-full p-2 border border-gray-300 rounded-md mb-2"
+                placeholder="Deposit Number"
+                required
+              />
+              {/* Editable Account Type field */}
+              <input
+                name="account_type"
+                defaultValue={statement.account_type}
+                className="w-full p-2 border border-gray-300 rounded-md mb-2"
+                placeholder="Account Type"
+                required
+              />
+              {/* Editable Comment field */}
+              <input
+                name="comment"
+                defaultValue={statement.comment}
+                className="w-full p-2 border border-gray-300 rounded-md mb-2"
+                placeholder="Comment"
+                required
+              />
 
               {/* Hidden field to store the original DP ID for updates */}
               <input type="hidden" name="old_dp_id" value={statement.dp_id} />
